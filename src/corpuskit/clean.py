@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from dataclasses import replace
 
 import cjkfold
 
@@ -133,33 +134,24 @@ def strip_boilerplate(
     pages = []
     for page in document.pages:
         kept = [block for block in page.blocks if not is_boilerplate(block, page)]
-        pages.append(
-            type(page)(number=page.number, width=page.width, height=page.height, blocks=kept)
-        )
+        pages.append(replace(page, blocks=kept))
 
-    return type(document)(source=document.source, pages=pages, metadata=document.metadata)
+    return replace(document, pages=pages)
 
 
 def normalize_document(document: Document) -> Document:
-    """Apply :func:`normalize` to every block, dropping any that become empty."""
+    """Apply :func:`normalize` to every block, dropping any that become empty.
+
+    Blocks are rebuilt with :func:`dataclasses.replace` rather than field by
+    field. Copying by hand means the next field added to ``Block`` silently
+    vanishes here — which is exactly how ``table`` was being lost.
+    """
     pages = []
     for page in document.pages:
         kept = []
         for block in page.blocks:
             text = normalize(block.text)
             if text:
-                kept.append(
-                    Block(
-                        text=text,
-                        page=block.page,
-                        x0=block.x0,
-                        y0=block.y0,
-                        x1=block.x1,
-                        y1=block.y1,
-                        kind=block.kind,
-                    )
-                )
-        pages.append(
-            type(page)(number=page.number, width=page.width, height=page.height, blocks=kept)
-        )
-    return type(document)(source=document.source, pages=pages, metadata=document.metadata)
+                kept.append(replace(block, text=text))
+        pages.append(replace(page, blocks=kept))
+    return replace(document, pages=pages)
