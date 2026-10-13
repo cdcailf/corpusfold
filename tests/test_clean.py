@@ -133,3 +133,30 @@ def test_ordinary_prose_is_not_a_contents_entry():
 def test_a_dot_run_inside_a_sentence_is_not_a_contents_entry():
     assert not is_toc_entry("等等……还有别的例子 1234")
     assert not is_toc_entry("这一段结尾是数字 2023，但没有引导点")
+
+
+# --- rebuilds must not lose fields ----------------------------------------
+
+def test_normalize_document_preserves_every_block_field():
+    """Rebuilding blocks by hand once dropped ``table`` without a sound.
+
+    The failure is silent: the table quietly stops being sliced, and the only
+    symptom is a chunk far larger than the hard maximum.
+    """
+    block = Block(
+        text="项目 收入",
+        page=1,
+        x0=1,
+        y0=2,
+        x1=3,
+        y1=4,
+        kind="table",
+        table=[["项目", "收入"], ["甲", "100"]],
+    )
+    doc = Document(source="synthetic", pages=[_page(1, [block])])
+
+    result = normalize_document(doc).pages[0].blocks[0]
+
+    assert result.kind == "table"
+    assert result.table == [["项目", "收入"], ["甲", "100"]]
+    assert result.x0 == 1 and result.y1 == 4

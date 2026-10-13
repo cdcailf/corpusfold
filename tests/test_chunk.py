@@ -1,19 +1,19 @@
 """Chunking: sentence boundaries, merging, overlap, provenance."""
 from __future__ import annotations
 
-from corpuskit import Block, Document, Page, chunk_document, split_sentences
+from corpuskit import Block, Document, Page, chunk_document, rows_to_text, split_sentences
 
 
-def _page(number: int, texts: list[str]) -> Page:
-    return Page(
-        number=number,
-        width=595.0,
-        height=842.0,
-        blocks=[
-            Block(text=text, page=number, x0=40, y0=100 + i * 60, x1=550, y1=140 + i * 60)
-            for i, text in enumerate(texts)
-        ],
-    )
+def _page(number: int, texts: list) -> Page:
+    blocks = []
+    for i, item in enumerate(texts):
+        if isinstance(item, Block):
+            blocks.append(item)
+        else:
+            blocks.append(
+                Block(text=item, page=number, x0=40, y0=100 + i * 60, x1=550, y1=140 + i * 60)
+            )
+    return Page(number=number, width=595.0, height=842.0, blocks=blocks)
 
 
 def _doc(*pages: Page) -> Document:
@@ -115,3 +115,82 @@ def test_contents_entries_are_left_out_of_chunks():
 def test_a_document_of_only_contents_entries_yields_no_chunks():
     doc = _doc(_page(1, ["1、 第一节 ............ 1", "2、 第二节 ............ 3", "3、 第三节 ............ 7"]))
     assert chunk_document(doc) == []
+
+
+# --- tables ---------------------------------------------------------------
+
+def _table(rows, y=300):
+    return Block(
+        text=rows_to_text(rows),
+        page=1,
+        x0=40,
+        y0=y,
+        x1=550,
+        y1=y + 120,
+        kind="table",
+        table=rows,
+    )
+
+
+def test_a_table_stays_whole_in_its_own_chunk():
+    """Splitting a table scatters its column headers away from its values."""
+    doc = _doc(
+        _page(
+            1,
+            [
+                "前面是一段背景说明，讲的是公司所处的行业情况，以及它过去几年的位置。",
+                _table([["项目", "2023", "2022"], ["收入", "100", "80"]]),
+                "后面是一段结论，讲的是对未来的展望，以及需要注意的风险。",
+            ],
+        )
+    )
+
+    chunks = chunk_document(doc, target=20, hard_max=30)
+
+    holding = [c for c in chunks if "收入 | 100 | 80" in c.text]
+    assert len(holding) == 1, "the table should appear in exactly one chunk"
+    assert "项目 | 2023 | 2022" in holding[0].text, "its header row came along"
+
+
+def test_a_table_chunk_does_not_absorb_the_surrounding_prose():
+    doc = _doc(
+        _page(
+            1,
+            [
+                "前面这段正文很长，长到足以让下一个块和它重叠起来，所以这里要写足够多的字才行。",
+                _table([["指标", "甲", "乙"], ["毛利率", "30", "25"]]),
+                "后面这段正文也同样写得很长，目的是确认表格块的两端都是干净的，没有被粘连。",
+            ],
+        )
+    )
+
+    chunks = chunk_document(doc, target=20, hard_max=30)
+
+    table_chunk = next(c for c in chunks if "毛利率" in c.text)
+    assert "前面这段正文" not in table_chunk.text
+    assert "后面这段正文" not in table_chunk.text
+
+
+def test_a_huge_table_is_sliced_with_the_header_repeated():
+    """A 60-row table must not become one four-thousand-character chunk."""
+    rows = [["代码", "简称", "市值"]] + [
+        [f"{i:06d}", f"公司{i}", str(i * 10)] for i in range(60)
+    ]
+    block = Block(
+        text=rows_to_text(rows),
+        page=1,
+        x0=40,
+        y0=100,
+        x1=550,
+        y1=700,
+        kind="table",
+        table=rows,
+    )
+    doc = _doc(_page(1, [block]))
+
+    chunks = chunk_document(doc, target=50, hard_max=120)
+
+    assert len(chunks) > 1, "a large table should not stay as one giant chunk"
+    for chunk in chunks:
+        assert chunk.text.startswith("代码 | 简称 | 市值"), "every slice keeps the header"
+        assert len(chunk.text) <= 120
