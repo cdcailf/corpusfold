@@ -6,11 +6,37 @@ build-backend = "setuptools.build_meta"
 name = "corpusfold"
 version = "0.1.0"
 description = "Turn messy Chinese documents (PDFs) into a clean, traceable knowledge base."
+readme = "README.md"
 requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "cdcailf" }]
+keywords = [
+    "chinese", "pdf", "rag", "retrieval", "chunking",
+    "text-extraction", "knowledge-base", "nlp",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: Chinese (Simplified)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Text Processing :: Indexing",
+    "Topic :: Text Processing :: Linguistic",
+]
 dependencies = [
     "pymupdf>=1.24",
     "cjkfold>=0.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/cdcailf/corpusfold"
+Repository = "https://github.com/cdcailf/corpusfold"
+Issues = "https://github.com/cdcailf/corpusfold/issues"
 
 [project.scripts]
 corpusfold = "corpusfold.cli:main"
