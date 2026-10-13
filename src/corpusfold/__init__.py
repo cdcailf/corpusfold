@@ -19,7 +19,7 @@ from .layout import by_position, detect_columns, is_full_width, page_order, read
 from .model import Block, Document, Page
 from .search import Hit, Index, bigrams, index_text
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "Block",

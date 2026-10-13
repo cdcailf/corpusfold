@@ -136,12 +136,14 @@ A 15-page broker research report (dense Chinese, multi-column, heavy tables):
 
 ## Install
 
-`cjkfold` is not on PyPI yet, so install it from a sibling checkout first:
+```bash
+pip install corpusfold
+```
+
+Working on it from a checkout instead:
 
 ```bash
-git clone https://github.com/cdcailf/cjkfold ../cjkfold
 uv venv .venv --python 3.11
-uv pip install -e ../cjkfold
 uv pip install -e ".[dev]"
 ```
 
