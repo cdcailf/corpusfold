@@ -30,6 +30,19 @@ _CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 # Zero-width and bidi controls: invisible, and they break exact matching.
 _ZERO_WIDTH = re.compile("[\u200b-\u200f\u202a-\u202e\u2060-\u2064\ufeff]")
 _DIGITS = re.compile(r"\d+")
+# A contents-page entry: a run of dot leaders, usually running to a page number.
+# Deliberately does not match "……" (U+2026), which is ordinary prose.
+_TOC_ENTRY = re.compile(r"[.．]{4,}\s*\d*\s*$")
+
+
+def is_toc_entry(text: str) -> bool:
+    """True for a contents line such as ``3、 风险提示 ............ 8``.
+
+    A contents page is a retrieval trap: it contains exactly the words a reader
+    would search for and none of the substance, so it ranks *above* the body it
+    points at. Callers that build a search index should skip these.
+    """
+    return bool(_TOC_ENTRY.search(text.strip()))
 
 
 def normalize(text: str) -> str:
