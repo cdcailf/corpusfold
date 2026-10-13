@@ -145,6 +145,37 @@ uv pip install -e ../cjkfold
 uv pip install -e ".[dev]"
 ```
 
+## Command line
+
+No code required:
+
+```bash
+corpusfold inspect 研报.pdf                      # 流水线对这份文档做了什么
+corpusfold build 研报.pdf -o index.json           # 建索引
+corpusfold search "近两月上市公司数量和平均涨幅" -i index.json
+```
+
+`inspect` — the fastest way to judge whether this is worth your time:
+
+```
+研报.pdf
+  页数        15
+  原始块      326
+  表格        17 个
+  页眉页脚    删掉 27 块
+  多栏页      5 / 15
+  分块        52 个，中位 411 字，最大 775 字
+  预览
+    [研报.pdf p.1] 2023 年01 月15 日专题研究新股研究…
+```
+
+`search` — every hit says where it came from:
+
+```
+1. 1.068   研报.pdf p.5-6
+   资料来源：Wind，国海证券研究所…上市首日平均涨幅12.10%，上市以来平均涨幅8.31%…
+```
+
 ## Tests
 
 ```bash
@@ -164,6 +195,7 @@ no fixture files, no Chinese font, no network.
 - [x] Tables as structured blocks, de-duplicated and sliced
 - [x] Chinese-aware chunking with overlap and provenance
 - [x] Hybrid retrieval: bigram BM25 + exact n-gram bonus + optional dense layer
+- [x] Command line: `inspect` / `build` / `search`
 - [ ] Section headings as breadcrumbs on each chunk
 - [ ] OCR path for scanned pages
 

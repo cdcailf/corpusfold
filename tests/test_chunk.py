@@ -1,7 +1,7 @@
 """Chunking: sentence boundaries, merging, overlap, provenance."""
 from __future__ import annotations
 
-from corpusfold import Block, Document, Page, chunk_document, rows_to_text, split_sentences
+from corpusfold import Block, Chunk, Document, Page, chunk_document, rows_to_text, split_sentences
 
 
 def _page(number: int, texts: list) -> Page:
@@ -194,3 +194,23 @@ def test_a_huge_table_is_sliced_with_the_header_repeated():
     for chunk in chunks:
         assert chunk.text.startswith("代码 | 简称 | 市值"), "every slice keeps the header"
         assert len(chunk.text) <= 120
+
+
+# --- provenance labels ----------------------------------------------------
+
+def test_label_shows_the_file_name_not_the_whole_path():
+    """An absolute path in a result list pushes everything else off the line."""
+    chunk = Chunk(
+        text="甲",
+        source="/Users/someone/a/very/long/path/研报.pdf",
+        ordinal=0,
+        page=3,
+        pages=(3,),
+    )
+    assert chunk.label == "研报.pdf p.3"
+    assert chunk.source == "/Users/someone/a/very/long/path/研报.pdf"
+
+
+def test_label_spans_a_page_range():
+    chunk = Chunk(text="甲", source="/tmp/a.pdf", ordinal=0, page=3, pages=(3, 4))
+    assert chunk.label == "a.pdf p.3-4"

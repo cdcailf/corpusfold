@@ -12,6 +12,9 @@ dependencies = [
     "cjkfold>=0.1",
 ]
 
+[project.scripts]
+corpusfold = "corpusfold.cli:main"
+
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 

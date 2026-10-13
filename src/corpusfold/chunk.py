@@ -44,10 +44,16 @@ class Chunk:
 
     @property
     def label(self) -> str:
-        """Human-readable provenance, e.g. ``report.pdf p.3``."""
+        """Human-readable provenance, e.g. ``report.pdf p.3``.
+
+        The file *name*, not the full path: labels are printed beside each other
+        in a result list, and an absolute path pushes everything else off the
+        line. ``source`` still holds the full path for anything that needs it.
+        """
+        name = self.source.replace("\\", "/").rsplit("/", 1)[-1]
         if len(self.pages) > 1:
-            return f"{self.source} p.{self.pages[0]}-{self.pages[-1]}"
-        return f"{self.source} p.{self.page}"
+            return f"{name} p.{self.pages[0]}-{self.pages[-1]}"
+        return f"{name} p.{self.page}"
 
 
 def split_sentences(text: str) -> list[str]:
