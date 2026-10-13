@@ -21,6 +21,7 @@ from dataclasses import dataclass
 import cjkfold
 
 from .chunk import Chunk, fingerprint
+from .embedding import Embedder, cosine
 
 # Standard BM25 constants: term-frequency saturation and length normalisation.
 K1 = 1.5
@@ -38,6 +39,7 @@ class Hit:
     score: float
     lexical: float
     exact: float
+    dense: float = 0.0
 
     @property
     def label(self) -> str:
@@ -63,8 +65,13 @@ def bigrams(text: str) -> list[str]:
 class Index:
     """An in-memory BM25 index over character bigrams."""
 
-    def __init__(self, chunks: list[Chunk]) -> None:
+    def __init__(self, chunks: list[Chunk], *, embedder: Embedder | None = None) -> None:
         self._chunks = list(chunks)
+        self._embedder = embedder
+        self._vectors: list[list[float]] = []
+        if embedder is not None and self._chunks:
+            self._vectors = list(embedder.encode([chunk.text for chunk in self._chunks]))
+
         self._tf = [Counter(bigrams(chunk.text)) for chunk in self._chunks]
         self._length = [sum(tf.values()) for tf in self._tf]
         self._avg_length = (sum(self._length) / len(self._length)) if self._length else 0.0
@@ -105,23 +112,41 @@ class Index:
         limit: int = 5,
         dedupe: bool = True,
         exact_cap: float = 0.25,
+        dense_weight: float = 0.5,
     ) -> list[Hit]:
-        """Rank chunks against *query*, best first."""
-        terms = set(bigrams(query))
-        if not terms or not self._chunks:
+        """Rank chunks against *query*, best first.
+
+        ``dense_weight`` matters only when the index was built with an
+        ``embedder``; with none, every dense component is zero and the ranking
+        is purely lexical.
+        """
+        if not self._chunks or not query.strip():
             return []
 
-        raw = [self._bm25(position, terms) for position in range(len(self._chunks))]
+        query_vector = None
+        if self._embedder is not None and self._vectors and dense_weight:
+            query_vector = self._embedder.encode([query])[0]
+
+        terms = set(bigrams(query))
+        raw = (
+            [self._bm25(position, terms) for position in range(len(self._chunks))]
+            if terms
+            else [0.0] * len(self._chunks)
+        )
         top = max(raw) or 1.0  # lexical scores are unbounded, so scale to 0..1
 
         hits: list[Hit] = []
         for position, value in enumerate(raw):
-            if value <= 0:
-                continue
             chunk = self._chunks[position]
             lexical = value / top
             exact = cjkfold.exact_boost(query, chunk.text, cap=exact_cap)
-            hits.append(Hit(chunk=chunk, score=lexical + exact, lexical=lexical, exact=exact))
+            dense = cosine(query_vector, self._vectors[position]) if query_vector else 0.0
+            # A chunk with no lexical overlap can still be the right answer when
+            # the dense layer scores it, so the cut-off is on the total.
+            score = lexical + exact + dense_weight * dense
+            if score <= 0:
+                continue
+            hits.append(Hit(chunk=chunk, score=score, lexical=lexical, exact=exact, dense=dense))
 
         hits.sort(key=lambda hit: hit.score, reverse=True)
 

@@ -18,6 +18,8 @@ from dataclasses import dataclass, field
 import cjkfold
 
 from .clean import is_toc_entry
+from .extract import rows_to_text, split_rows
+from .layout import reading_order
 from .model import Block, Document
 
 # Split after a Chinese sentence-final mark, after an English period/question
@@ -110,6 +112,19 @@ def chunk_document(
         pending.clear()
 
     for block in blocks:
+        if block.kind == "table":
+            # A table is atomic: its rows are the unit that carries meaning, and
+            # splitting one mid-table scatters column headers away from their
+            # values. Only a table too large to read as a single passage is
+            # sliced — and then every slice repeats the header.
+            flush()
+            carry.clear()
+            for part in split_rows(block.table or [[block.text]], hard_max):
+                pending.append((rows_to_text(part), block.page))
+                flush()
+                carry.clear()
+            continue
+
         for sentence in split_sentences(block.text):
             pending.append((sentence, block.page))
             if current_size() >= hard_max:
@@ -121,18 +136,6 @@ def chunk_document(
 
     flush()
     return chunks
-
-
-def reading_order(document: Document) -> list[Block]:
-    """Blocks in page order, then top-to-bottom, left-to-right.
-
-    Deliberately simple: it does not yet reconstruct columns. Multi-column
-    layouts are handled at the extraction layer, not here.
-    """
-    ordered: list[Block] = []
-    for page in document.pages:
-        ordered.extend(sorted(page.blocks, key=lambda b: (round(b.y0, 1), b.x0)))
-    return ordered
 
 
 def _build(document: Document, ordinal: int, items: list[tuple[str, int]]) -> Chunk:

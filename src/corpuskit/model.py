@@ -12,7 +12,11 @@ from dataclasses import dataclass, field
 
 @dataclass
 class Block:
-    """A positioned run of text on a page."""
+    """A positioned run of content on a page.
+
+    ``kind`` is ``"text"`` for prose and ``"table"`` for a detected table,
+    whose cells are also available as ``table``.
+    """
 
     text: str
     page: int  # 1-based
@@ -21,6 +25,7 @@ class Block:
     x1: float
     y1: float
     kind: str = "text"  # text | table
+    table: list[list[str]] | None = None
 
     @property
     def width(self) -> float:
