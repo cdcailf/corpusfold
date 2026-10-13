@@ -1,7 +1,7 @@
 """The optional dense layer, wired up with a stub that never touches a network."""
 from __future__ import annotations
 
-from corpuskit import Chunk, Index, cosine, fingerprint
+from corpusfold import Chunk, Index, cosine, fingerprint
 
 
 class StubEmbedder:

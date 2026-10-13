@@ -1,6 +1,6 @@
 """Optional dense (vector) retrieval.
 
-Off unless you hand an ``embedder`` to :class:`~corpuskit.Index`. The default
+Off unless you hand an ``embedder`` to :class:`~corpusfold.Index`. The default
 install stays dependency-free and offline; turning the dense layer on is a
 deliberate act, not something that happens because a dependency appeared.
 

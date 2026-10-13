@@ -9,7 +9,7 @@ from __future__ import annotations
 import pymupdf
 import pytest
 
-from corpuskit import extract_pdf, find_boilerplate, strip_boilerplate
+from corpusfold import extract_pdf, find_boilerplate, strip_boilerplate
 
 
 @pytest.fixture

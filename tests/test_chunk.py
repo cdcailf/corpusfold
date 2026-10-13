@@ -1,7 +1,7 @@
 """Chunking: sentence boundaries, merging, overlap, provenance."""
 from __future__ import annotations
 
-from corpuskit import Block, Document, Page, chunk_document, rows_to_text, split_sentences
+from corpusfold import Block, Document, Page, chunk_document, rows_to_text, split_sentences
 
 
 def _page(number: int, texts: list) -> Page:

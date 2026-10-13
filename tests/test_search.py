@@ -1,7 +1,7 @@
 """Retrieval: ranking, look-alike tolerance, de-duplication, provenance."""
 from __future__ import annotations
 
-from corpuskit import Chunk, Index, fingerprint
+from corpusfold import Chunk, Index, fingerprint
 
 
 def _chunk(text: str, ordinal: int = 0, page: int = 1, source: str = "doc.pdf") -> Chunk:
@@ -71,7 +71,7 @@ def test_hits_carry_provenance():
 
 
 def test_multipage_chunks_label_their_range():
-    from corpuskit import fingerprint as fp
+    from corpusfold import fingerprint as fp
 
     chunk = Chunk(text="跨页的一段。", source="doc.pdf", ordinal=0, page=2, pages=(2, 3), fingerprint=fp("跨页的一段。"))
     assert Index([chunk]).search("跨页")[0].label == "doc.pdf p.2-3"

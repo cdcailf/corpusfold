@@ -1,6 +1,6 @@
-"""corpuskit — turn messy Chinese documents into a clean, traceable knowledge base.
+"""corpusfold — turn messy Chinese documents into a clean, traceable knowledge base.
 
-    >>> from corpuskit import extract_pdf, strip_boilerplate, normalize_document, chunk_document
+    >>> from corpusfold import extract_pdf, strip_boilerplate, normalize_document, chunk_document
     >>> doc = normalize_document(strip_boilerplate(extract_pdf("report.pdf")))
     >>> chunks = chunk_document(doc)
 """

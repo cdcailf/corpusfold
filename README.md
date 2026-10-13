@@ -1,4 +1,4 @@
-# corpuskit
+# corpusfold
 
 Turn the PDFs you actually have into a clean, **traceable** knowledge base.
 
@@ -6,7 +6,7 @@ Built for Chinese documents, where the hard part is almost never the embedding
 model — it is everything upstream of it.
 
 ```python
-from corpuskit import extract_pdf, strip_boilerplate, normalize_document, chunk_document, Index
+from corpusfold import extract_pdf, strip_boilerplate, normalize_document, chunk_document, Index
 
 doc = normalize_document(strip_boilerplate(extract_pdf("report.pdf")))
 index = Index(chunk_document(doc))
@@ -26,7 +26,7 @@ for hit in index.search("近两月上市公司数量和平均涨幅", limit=3):
 检索层   bigram BM25 + 精确命中 + 可选向量     → ✅
 ```
 
-`corpuskit` depends on [`cjkfold`](https://github.com/cdcailf/cjkfold) for the
+`corpusfold` depends on [`cjkfold`](https://github.com/cdcailf/cjkfold) for the
 character layer and does not duplicate it.
 
 ## Six things that decide whether this works

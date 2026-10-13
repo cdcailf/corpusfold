@@ -5,7 +5,7 @@ Two separate problems live here:
 1. **Characters** — look-alike codepoints, zero-width junk, control characters.
    Handled by ``cjkfold`` plus a small table.
 2. **Boilerplate** — running headers and footers. These are a *layout* problem,
-   so this module needs the coordinates that :mod:`corpuskit.extract` preserved.
+   so this module needs the coordinates that :mod:`corpusfold.extract` preserved.
 
 The subtle part is that footers usually carry a page number::
 

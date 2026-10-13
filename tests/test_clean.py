@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pytest
 
-from corpuskit import (
+from corpusfold import (
     Block,
     Document,
     Page,

@@ -1,7 +1,7 @@
 """Layout: column detection and reading order."""
 from __future__ import annotations
 
-from corpuskit import Block, Document, Page, detect_columns, is_full_width, page_order, reading_order
+from corpusfold import Block, Document, Page, detect_columns, is_full_width, page_order, reading_order
 
 WIDTH = 600.0
 HEIGHT = 800.0

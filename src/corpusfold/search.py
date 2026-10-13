@@ -8,7 +8,7 @@ Two decisions worth naming up front:
 2. **Lexical first, exact-match bonus on top.** Dense scores are bad at literal
    tokens; ``cjkfold``'s character n-gram overlap puts them back.
 
-Every hit carries its :class:`~corpuskit.chunk.Chunk`, so the caller can always
+Every hit carries its :class:`~corpusfold.chunk.Chunk`, so the caller can always
 say which document and page an answer came from.
 """
 from __future__ import annotations
