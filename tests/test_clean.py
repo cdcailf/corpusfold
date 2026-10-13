@@ -13,6 +13,7 @@ from corpuskit import (
     Page,
     boilerplate_key,
     find_boilerplate,
+    is_toc_entry,
     normalize,
     normalize_document,
     strip_boilerplate,
@@ -113,3 +114,22 @@ def test_no_detected_boilerplate_returns_the_same_document():
         pages=[_page(1, [Block(text="只有一页。", page=1, x0=40, y0=400, x1=100, y1=420)])],
     )
     assert strip_boilerplate(doc) is doc
+
+
+# --- contents pages -------------------------------------------------------
+
+def test_recognises_a_contents_entry():
+    assert is_toc_entry("3、 风险提示 .............................. 8")
+    assert is_toc_entry("图1：涛涛车业主营业务收入结构 ........ 5")
+    assert is_toc_entry("1.1、 本周上市公司 ..........")
+
+
+def test_ordinary_prose_is_not_a_contents_entry():
+    assert not is_toc_entry("这里用了省略号……但那是正常行文。")
+    assert not is_toc_entry("公司的产能正在扩张，订单已经排到了下个季度。")
+    assert not is_toc_entry("")
+
+
+def test_a_dot_run_inside_a_sentence_is_not_a_contents_entry():
+    assert not is_toc_entry("等等……还有别的例子 1234")
+    assert not is_toc_entry("这一段结尾是数字 2023，但没有引导点")
